@@ -3,7 +3,6 @@ pandas
 numpy
 datetime
 plotly.express
-plotly.graph_objects
 streamlit_option_menu
 streamlit.components.v1
 streamlit_extras.metric_cards
