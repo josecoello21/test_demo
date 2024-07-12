@@ -77,17 +77,27 @@ col1, col2 = st.columns([0.15, 0.85], vertical_alignment="center")
 with col1:
   RIF = st.text_input(r"$\textsf{\Large Ingrese un RIF}$", placeholder='Número de RIF')
   RIF.strip()
-  components.html(
-      """
-  <script>
-  const elements = window.parent.document.querySelectorAll('.stTextInput div[data-baseweb="input"] > div')
-  console.log(elements)
-  elements[0].style.backgroundColor = '#fafafa'
-  </script>
-  """,
-      height=0,
-      width=0,
-      )
+  # components.html(
+  #     """
+  # <script>
+  # const elements = window.parent.document.querySelectorAll('.stTextInput div[data-baseweb="input"] > div')
+  # console.log(elements)
+  # elements[0].style.backgroundColor = '#fafafa'
+  # </script>
+  # """,
+  #     height=0,
+  #     width=0,
+  #     )
+  css_input = """ 
+    <style>
+    .st-bb {
+        background-color: #fafafa;
+    }
+    .st-b6 {
+      color:rgb(0,32,78);
+    }
+    </style>"""
+  st.markdown(css_input, unsafe_allow_html=True)
 
 # condicion para guardar el rif en la sesion para demas consultas en otros modulos
 if RIF:
