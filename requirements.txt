@@ -1,0 +1,12 @@
+streamlit
+pandas
+numpy
+datetime
+calendar
+random
+plotly.express
+plotly.subplots
+plotly.graph_objects
+streamlit_option_menu
+streamlit.components.v1
+streamlit_extras.metric_cards
