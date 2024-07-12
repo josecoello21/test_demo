@@ -63,7 +63,7 @@ with st.sidebar:
         menu_icon="cast", default_index=0,
         styles={
             "container": {"padding": "0!important", "background-color": "#fafafa"},
-            "icon": {"color": "#00204e", "font-size": "25px"}, 
+            "icon": {"color": "#00204e", "font-size": "20px"}, 
             "nav-link": {"font-size": "20px", "text-align": "left", "margin":"0px", "--hover-color": "#eee", "font-color":"green"},
             "nav-link-selected": {"background-color": "rgb(105,190,40)"},
             }
