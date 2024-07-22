@@ -194,6 +194,42 @@ custom_ser = """
         text-align:left;
         font-size: 1.02rem;
     }
+    .red-val {
+        font-family:KaTeX_SansSerif;
+        text-align:left;
+        font-size: 1.02rem;
+        color:#ff0000;
+    }
+    .val-bold {
+        font-family:KaTeX_SansSerif;
+        text-align:left;
+        font-size:1.2em;
+        font-weight:bold;
+    }
+    .val-red-bold {
+        font-family:KaTeX_SansSerif;
+        text-align:left;
+        font-size:1.2em;
+        font-weight:bold;
+        color:#ff0000;
+    }
+    .diff {
+        border: 0.5px solid #c3c8c8;
+        border-radius:5px;
+        font-family:KaTeX_SansSerif;
+        text-align:right;
+        font-size:1.2em;
+        font-weight:bold;
+    }
+    .negative-diff {
+        border: 0.5px solid #c3c8c8;
+        border-radius:5px;
+        font-family:KaTeX_SansSerif;
+        text-align:right;
+        font-size:1.2em;
+        font-weight:bold;
+        color:#ff0000;
+    }
     </style>"""
 st.markdown(custom_ser, unsafe_allow_html=True)
 
@@ -543,7 +579,8 @@ if menu == 'Inicio':
         height=260
         # plot saldos bs
         title='Saldo Promedio {period} Cuenta Bs'.format(period=period)
-        fig = px.bar(saldos_df, x='meses', y='Cuenta Bs', text_auto='.2s')
+        fig = px.bar(saldos_df, x='meses', y='Cuenta Bs', text_auto='.2s',
+                     text=['Bs '+f'{bs:,}'.replace(',','.') for bs in saldos_df['Cuenta Bs'].to_list()])
         fig.update_traces(marker_color='rgb(0,152,219)')
         fig.update_layout(title_text=title, title_x=0.5, title_xanchor='center',
                           title_font_style='normal', title_font_weight='bold',
@@ -555,6 +592,7 @@ if menu == 'Inicio':
         title = 'Saldo Promedio {period} Divisas'.format(period=period)
         legend=dict(orientation='h',yanchor='bottom',y=1,xanchor="right",x=0.4)
         fig = px.bar(div_df, x="meses", y="Saldo", color="Cuenta", text_auto='.2s',
+                     text=['$ '+f'{d:,}'.replace(',','.') for d in div_df['Saldo'].to_list()],
                      color_discrete_sequence=['rgb(105,190,40)', 'rgb(0,152,219)'])
         fig.update_layout(title_text=title, title_x=0.5, title_xanchor='center',
                           title_font_style='normal', title_font_weight='bold',
@@ -659,10 +697,16 @@ if menu == 'Inicio':
       for i in range(len(ser_df)):
         if count<=np.ceil(half):
           c1.markdown('<div class="header">{ser}</div>'.format(ser=ser_df.iloc[(i,0)]),unsafe_allow_html=True)
-          c2.markdown('<div class="val">{val}</div>'.format(val=f'{ser_df.iloc[(i,1)]:,}'.replace(',','.')),unsafe_allow_html=True)
+          if ser_df.iloc[(i,1)] > 0:
+            c2.markdown('<div class="val">{val}</div>'.format(val=f'{ser_df.iloc[(i,1)]:,}'.replace(',','.')),unsafe_allow_html=True)
+          else:
+            c2.markdown('<div class="val">-</div>',unsafe_allow_html=True)
         else:
           c3.markdown('<div class="header">{ser}</div>'.format(ser=ser_df.iloc[(i,0)]),unsafe_allow_html=True)
-          c4.markdown('<div class="val">{val}</div>'.format(val=f'{ser_df.iloc[(i,1)]:,}'.replace(',','.')),unsafe_allow_html=True)
+          if ser_df.iloc[(i,1)]>0:
+            c4.markdown('<div class="val">{val}</div>'.format(val=f'{ser_df.iloc[(i,1)]:,}'.replace(',','.')),unsafe_allow_html=True)
+          else:
+            c4.markdown('<div class="val">-</div>',unsafe_allow_html=True)
         count+=1
 # MENU: ENTRADAS Y SALIDAS
 elif menu=='Entradas y Salidas':
@@ -696,7 +740,6 @@ elif menu=='Entradas y Salidas':
     for i in range(len(ent_sal_df)):
       col3.markdown('<div class="header">{item}</div>'.format(item=ent_sal_df.iloc[(i,1)]),unsafe_allow_html=True)
       col4.markdown('<div class="val">-</div>', unsafe_allow_html=True)
-    # col5.metric(label=r"$\textsf{\normalsize \textbf{Diferencia}}$",value=None, delta=None)
   else:
     # datos del cliente
     Cards(True)
@@ -705,17 +748,32 @@ elif menu=='Entradas y Salidas':
     ent_sal_df['monto_salida']=[random.choice([300000,150000,40000,5000000,800000,0,0,200000,0]) for k in range(len(ent_sal_df))]
     col1,col2,col3,col4,col5=st.columns([0.35,0.1,0.35,0.1,0.1])
     col1.markdown('<div class="Header">Total Entradas que Aplican</div>', unsafe_allow_html=True)
-    col2.markdown('<div class="val">{val}</div>'.format(val=f'{ent_sal_df.monto_entrada.sum():,}'.replace(',','.')), unsafe_allow_html=True)
-    for i in range(len(ent_sal_df)-2):
+    col2.markdown('<div class="val-bold">{val}</div>'.format(val=f'{ent_sal_df.monto_entrada.sum():,}'.replace(',','.')), unsafe_allow_html=True)
+    for i in range(len(ent_sal_df)):
+      # skip blank services
+      if ent_sal_df.sort_values('monto_entrada', ascending=False).iloc[(i,0)] == '':
+        continue
       col1.markdown('<div class="header">{item}</div>'.format(item=ent_sal_df.sort_values('monto_entrada', ascending=False).iloc[(i,0)]),unsafe_allow_html=True)
-      col2.markdown('<div class="val">{val}</div>'.format(val=f'{ent_sal_df.sort_values("monto_entrada", ascending=False).iloc[(i,2)]:,}'.replace(',','.')), unsafe_allow_html=True)
+      # print values 
+      if ent_sal_df.sort_values("monto_entrada", ascending=False).iloc[(i,2)]>0:
+        col2.markdown('<div class="val">{val}</div>'.format(val=f'{ent_sal_df.sort_values("monto_entrada", ascending=False).iloc[(i,2)]:,}'.replace(',','.')), unsafe_allow_html=True)
+      else:
+        col2.markdown('<div class="val">-</div>', unsafe_allow_html=True)
     # SALIDAS
     col3.markdown('<div class="Header">Total Salidas que Aplican</div>', unsafe_allow_html=True)
-    col4.markdown('<div class="val">{val}</div>'.format(val=f'{ent_sal_df.monto_salida.sum():,}'.replace(',','.')), unsafe_allow_html=True)
+    col4.markdown('<div class="val-red-bold">{val}</div>'.format(val='-'+f'{ent_sal_df.monto_salida.sum():,}'.replace(',','.')), unsafe_allow_html=True)
     for i in range(len(ent_sal_df)):
       col3.markdown('<div class="header">{item}</div>'.format(item=ent_sal_df.sort_values('monto_salida', ascending=False).iloc[(i,1)]),unsafe_allow_html=True)
-      col4.markdown('<div class="val">{val}</div>'.format(val=f'{ent_sal_df.sort_values("monto_salida", ascending=False).iloc[(i,3)]:,}'.replace(',','.')), unsafe_allow_html=True)
-    # col5.metric(label=r"$\textsf{\normalsize \textbf{Diferencia}}$",value=None, delta=None)
+      if ent_sal_df.sort_values("monto_salida", ascending=False).iloc[(i,3)]>0:
+        col4.markdown('<div class="red-val">{val}</div>'.format(val='-'+f'{ent_sal_df.sort_values("monto_salida", ascending=False).iloc[(i,3)]:,}'.replace(',','.')), unsafe_allow_html=True)
+      else:
+        col4.markdown('<div class="red-val">-</div>', unsafe_allow_html=True)
+    value=ent_sal_df.monto_entrada.sum()-ent_sal_df.monto_salida.sum()
+    value_format=f'{value:,}'.replace(',','.')
+    if value >= 0:
+      col5.markdown('<div class="diff">{val}</div>'.format(val=value_format), unsafe_allow_html=True)
+    else:
+      col5.markdown('<div class="negative-diff">{val}</div>'.format(val=value_format), unsafe_allow_html=True)
 
 
 
