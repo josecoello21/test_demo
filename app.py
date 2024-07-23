@@ -80,7 +80,7 @@ st.sidebar.write('\n')
 
 # set main menu sidebar
 with st.sidebar:
-  menu = option_menu(None, ["Inicio", "Entradas y Salidas", "Accionistas", "Comportamiento"],
+  menu = option_menu(None, ["Inicio", "Entradas y Salidas", "Accionistas"],
         icons=['file-play-fill', 'calculator-fill', "people-fill", 'clipboard-data-fill'], 
         menu_icon="cast", default_index=0,
         styles={
@@ -194,6 +194,11 @@ custom_ser = """
         text-align:left;
         font-size: 1.02rem;
     }
+    .val-center {
+        font-family:KaTeX_SansSerif;
+        text-align:center;
+        font-size: 1.02rem;
+    }
     .red-val {
         font-family:KaTeX_SansSerif;
         text-align:left;
@@ -217,7 +222,7 @@ custom_ser = """
         border: 0.5px solid #c3c8c8;
         border-radius:5px;
         font-family:KaTeX_SansSerif;
-        text-align:right;
+        text-align:center;
         font-size:1.2em;
         font-weight:bold;
     }
@@ -225,7 +230,7 @@ custom_ser = """
         border: 0.5px solid #c3c8c8;
         border-radius:5px;
         font-family:KaTeX_SansSerif;
-        text-align:right;
+        text-align:center;
         font-size:1.2em;
         font-weight:bold;
         color:#ff0000;
@@ -774,9 +779,109 @@ elif menu=='Entradas y Salidas':
       col5.markdown('<div class="diff">{val}</div>'.format(val=value_format), unsafe_allow_html=True)
     else:
       col5.markdown('<div class="negative-diff">{val}</div>'.format(val=value_format), unsafe_allow_html=True)
+#ACCIONISTAS Y FIRMANTES
+elif menu=="Accionistas":
+  # check si rif ya fue consultado
+  if not 'RIF' in st.session_state:
+    # datos generales del cliente a mostrar 
+    Cards()
+    st.markdown('<h3 class="CenterSection"> Firmantes de la Empresa </h3>', unsafe_allow_html=True)
+    # firmantes de la empresa
+    c1,c2,c3,c4 = st.columns([0.25,0.25,0.25,0.25])
+    c1.markdown('<div class="my-header">Nombre</div>', unsafe_allow_html=True)
+    c1.markdown('<div class="values">-</div>', unsafe_allow_html=True)
+    c2.markdown('<div class="my-header">Cédula</div>', unsafe_allow_html=True)
+    c2.markdown('<div class="values">-</div>', unsafe_allow_html=True)
+    c3.markdown('<div class="my-header">Firmante</div>', unsafe_allow_html=True)
+    c3.markdown('<div class="values">-</div>', unsafe_allow_html=True)
+    c4.markdown('<div class="my-header">% Acciones</div>', unsafe_allow_html=True)
+    c4.markdown('<div class="values">-</div>', unsafe_allow_html=True)
+  # RIF is save in session state
+  else:
+    # datos generales del cliente a mostrar 
+    Cards(True)
+    st.markdown('<h3 class="CenterSection"> Firmantes de la Empresa </h3>', unsafe_allow_html=True)
+    # data accionistas y firmantes
+    nombres = ['Alexander Javier Gonzalez Gimenez', 'Mauricio Octavio Carvajal Betancourd',
+               'Nicolas Zacharias Medina Hermosillo', 'Enrrique Rafael Pernalete de la Trinidad']
+    cedula = [21091983, 15874368, 29782364, 14258796]
+    fir = ['Si','Si','No','Si']
+    acciones=['25%','25%','0%','50%']
+    firmante = {'nombre':nombres,'ci':cedula,'fir':fir,'acciones':acciones}
+    firmante_df = pd.DataFrame(firmante)
+    # firmantes de la empresa
+    c1,c2,c3,c4 = st.columns([0.34,0.22,0.22,0.22])
+    c1.markdown('<div class="my-header">Nombre</div>', unsafe_allow_html=True)
+    c2.markdown('<div class="my-header">Cédula</div>', unsafe_allow_html=True)
+    c3.markdown('<div class="my-header">Firmante</div>', unsafe_allow_html=True)
+    c4.markdown('<div class="my-header">% Acciones</div>', unsafe_allow_html=True)
+    for i in range(len(firmante_df)):
+      c1.markdown('<div class="val-center">{val}</div>'.format(val=firmante_df.iloc[i,0]), unsafe_allow_html=True)
+      c2.markdown('<div class="val-center">{val}</div>'.format(val=firmante_df.iloc[i,1]), unsafe_allow_html=True)
+      c3.markdown('<div class="val-center">{val}</div>'.format(val=firmante_df.iloc[i,2]), unsafe_allow_html=True)
+      c4.markdown('<div class="val-center">{val}</div>'.format(val=firmante_df.iloc[i,3]), unsafe_allow_html=True)
+  
+  # empresas asociadas a numero de cedula consultado
+  st.write('\n')
+  st.write('\n')
+  st.markdown('<h3 class="CenterSection"> Consulta de Cliente </h3>', unsafe_allow_html=True)
+  st.markdown('<div class="val">Para consultar empresas asociadas al cliente ingrese número de cédula.</div>', unsafe_allow_html=True)
+  st.write('\n')
+  col1, col2 = st.columns([0.15, 0.85], vertical_alignment="top")
+  with col1:
+    CI = st.text_input(r"$\textsf{\large Cliente a Consultar}$", placeholder='Número de cédula')
+    CI.strip()
+    css_input = """
+      <style>
+      .st-bb {
+          background-color: #fafafa;
+      }
+      .st-b6 {
+        color:rgb(0,32,78);
+      }
+      </style>"""
+    st.markdown(css_input, unsafe_allow_html=True)
+  # condicion para guardar la cedula en la sesion y realizar consulta
+  if CI:
+    if len(CI) > 0 and CI.isnumeric():
+      st.session_state['CI'] = CI
+    else:
+      st.error('Número de cédula: "{}" inválido, Ingrese solo número'.format(CI))
+      if 'CI' in st.session_state:
+        del st.session_state['CI']
+  # consulta de cedula en caso de haber consultado un numero de cedula valido
+  if 'CI' in st.session_state:
+    # data empresas asociadas al cliente
+    empresa = ['Agencia de festejos Golden Roses', 'Frigorifico y Viveres El Dorado',
+                 'Farmacia de Alto Costo Caracas, C.A.', 'Ferreteria y Muebleria Hermanos Camejos']
+    rif = [21091983, 15874368, 29782364, 14258796]
+    fir = ['Si','Si','No','Si']
+    acciones=['25%','25%','0%','50%']
+    emp_cliente = {'empresa':empresa,'rif':rif,'fir':fir,'acciones':acciones}
+    emp_cliente_df = pd.DataFrame(emp_cliente)
+    c1,c2,c3,c4 = st.columns([0.34,0.22,0.22,0.22])
+    c1.markdown('<div class="my-header">Empresa</div>', unsafe_allow_html=True)
+    c2.markdown('<div class="my-header">RIF</div>', unsafe_allow_html=True)
+    c3.markdown('<div class="my-header">Firmante</div>', unsafe_allow_html=True)
+    c4.markdown('<div class="my-header">% Acciones</div>', unsafe_allow_html=True)
+    for i in range(len(emp_cliente_df)):
+      c1.markdown('<div class="val-center">{val}</div>'.format(val=emp_cliente_df.iloc[i,0]), unsafe_allow_html=True)
+      c2.markdown('<div class="val-center">{val}</div>'.format(val=emp_cliente_df.iloc[i,1]), unsafe_allow_html=True)
+      c3.markdown('<div class="val-center">{val}</div>'.format(val=emp_cliente_df.iloc[i,2]), unsafe_allow_html=True)
+      c4.markdown('<div class="val-center">{val}</div>'.format(val=emp_cliente_df.iloc[i,3]), unsafe_allow_html=True)
+  else:
+    c1,c2,c3,c4 = st.columns([0.25,0.25,0.25,0.25])
+    c1.markdown('<div class="my-header">Empresa</div>', unsafe_allow_html=True)
+    c1.markdown('<div class="values">-</div>', unsafe_allow_html=True)
+    c2.markdown('<div class="my-header">RIF</div>', unsafe_allow_html=True)
+    c2.markdown('<div class="values">-</div>', unsafe_allow_html=True)
+    c3.markdown('<div class="my-header">Firmante</div>', unsafe_allow_html=True)
+    c3.markdown('<div class="values">-</div>', unsafe_allow_html=True)
+    c4.markdown('<div class="my-header">% Acciones</div>', unsafe_allow_html=True)
+    c4.markdown('<div class="values">-</div>', unsafe_allow_html=True)
 
-
-
+# for k,v in st.session_state.items():
+#   print(k, v)
 # st.write(st.session_state)
 # if RIF == '':
 #   st.write('ES VACIO')
